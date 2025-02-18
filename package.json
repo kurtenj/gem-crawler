@@ -1,0 +1,13 @@
+{
+  "name": "2d-platformer",
+  "version": "1.0.0",
+  "description": "A 2D platformer game with randomly generated levels",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "phaser": "^3.70.0"
+  }
+} 
