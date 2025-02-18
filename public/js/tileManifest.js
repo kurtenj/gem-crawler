@@ -617,13 +617,13 @@ const TileManifest = {
 
         // Row 12 (240-259)
         ROW_12: {
-            COL_0: 240,   // Description: Player 1 idle
-            COL_1: 241,   // Description: Player 1 walk start
-            COL_2: 242,   // Description: Player 1 walk end
-            COL_3: 243,   // Description: Player 1 run start
-            COL_4: 244,   // Description: Player 1 run end
-            COL_5: 245,   // Description: Player 1 jump
-            COL_6: 246,   // Description: Player 1 prone
+            COL_0: 240,   // Description: Player default idle
+            COL_1: 241,   // Description: Player default walk start
+            COL_2: 242,   // Description: Player default walk end
+            COL_3: 243,   // Description: Player default run start
+            COL_4: 244,   // Description: Player default run end
+            COL_5: 245,   // Description: Player default jump
+            COL_6: 246,   // Description: Player default prone
             COL_7: 247,   // Description: 
             COL_8: 248,   // Description: 
             COL_9: 249,   // Description: 
@@ -641,13 +641,13 @@ const TileManifest = {
 
         // Row 13 (260-279)
         ROW_13: {
-            COL_0: 260,   // Description: Player 2 idle
-            COL_1: 261,   // Description: Player 2 walk start
-            COL_2: 262,   // Description: Player 2 walk end
-            COL_3: 263,   // Description: Player 2 run start
-            COL_4: 264,   // Description: Player 2 run end
-            COL_5: 265,   // Description: Player 2 jump
-            COL_6: 266,   // Description: Player 2 prone
+            COL_0: 260,   // Description: Player diamond flying idle
+            COL_1: 261,   // Description: Player diamond flying walk start
+            COL_2: 262,   // Description: Player diamond flying walk end
+            COL_3: 263,   // Description: Player diamond flying run start
+            COL_4: 264,   // Description: Player diamond flying run end
+            COL_5: 265,   // Description: Player diamond flying jump
+            COL_6: 266,   // Description: Player diamond flying prone
             COL_7: 267,   // Description: 
             COL_8: 268,   // Description: 
             COL_9: 269,   // Description: 
@@ -665,13 +665,13 @@ const TileManifest = {
 
         // Row 14 (280-299)
         ROW_14: {
-            COL_0: 280,   // Description: Player 3 idle
-            COL_1: 281,   // Description: Player 3 walk start
-            COL_2: 282,   // Description: Player 3 walk end
-            COL_3: 283,   // Description: Player 3 run start
-            COL_4: 284,   // Description: Player 3 run end
-            COL_5: 285,   // Description: Player 3 jump
-            COL_6: 286,   // Description: Player 3 prone
+            COL_0: 280,   // Description: Player emerald defense idle
+            COL_1: 281,   // Description: Player emerald defense walk start
+            COL_2: 282,   // Description: Player emerald defense walk end
+            COL_3: 283,   // Description: Player emerald defense run start
+            COL_4: 284,   // Description: Player emerald defense run end
+            COL_5: 285,   // Description: Player emerald defense jump
+            COL_6: 286,   // Description: Player emerald defense prone
             COL_7: 287,   // Description: 
             COL_8: 288,   // Description: 
             COL_9: 289,   // Description: 
@@ -689,13 +689,13 @@ const TileManifest = {
 
         // Row 15 (300-319)
         ROW_15: {
-            COL_0: 300,   // Description: Player 4 idle
-            COL_1: 301,   // Description: Player 4 walk start
-            COL_2: 302,   // Description: Player 4 walk end
-            COL_3: 303,   // Description: Player 4 run start
-            COL_4: 304,   // Description: Player 4 run end
-            COL_5: 305,   // Description: Player 4 jump
-            COL_6: 306,   // Description: Player 4 prone
+            COL_0: 300,   // Description: Player ruby fire idle
+            COL_1: 301,   // Description: Player ruby fire walk start
+            COL_2: 302,   // Description: Player ruby fire walk end
+            COL_3: 303,   // Description: Player ruby fire run start
+            COL_4: 304,   // Description: Player ruby fire run end
+            COL_5: 305,   // Description: Player ruby fire jump
+            COL_6: 306,   // Description: Player ruby fire prone
             COL_7: 307,   // Description: 
             COL_8: 308,   // Description: 
             COL_9: 309,   // Description: 
