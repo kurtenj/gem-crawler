@@ -133,8 +133,15 @@ export class MainScene extends Phaser.Scene {
 
     handleEnemyCollision(player, enemy) {
         if (!enemy.isDead) {
-            this.scene.restart();
-            this.currentLevel = 1; // Reset level on death
+            // Disable further collisions during death animation
+            this.physics.world.disable(player);
+            this.physics.world.disable(enemy);
+            
+            // Stop player movement
+            player.setVelocity(0, 0);
+            
+            // Play death animation
+            this.player.die();
         }
     }
 

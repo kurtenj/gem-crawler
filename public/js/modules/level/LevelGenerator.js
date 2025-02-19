@@ -98,17 +98,23 @@ export class LevelGenerator {
         const horizontalSections = Math.ceil(numPlatforms / numLayers);
         const sectionWidth = (maxX - minX) / horizontalSections;
         
-        // Weight lower layers to have more platforms
+        // Weight lower layers to have more platforms and ensure some are close to ground
         let layer;
         const layerRoll = Math.random();
-        if (layerRoll < 0.4) {
-            layer = 0; // 40% chance for bottom layer
-        } else if (layerRoll < 0.7) {
+        const groundProximityThreshold = this.scene.GROUND_Y - 250; // Platforms within 250px of ground
+        
+        // If we don't have any platforms near the ground in this section, force a lower placement
+        const hasLowPlatform = usedPositions.some(pos => pos.bottom > groundProximityThreshold);
+        if (!hasLowPlatform && index % 3 === 0) { // Every third platform attempt
+            layer = 0; // Force ground layer
+        } else if (layerRoll < 0.5) {
+            layer = 0; // 50% chance for bottom layer
+        } else if (layerRoll < 0.8) {
             layer = 1; // 30% chance for second layer
-        } else if (layerRoll < 0.9) {
-            layer = 2; // 20% chance for third layer
+        } else if (layerRoll < 0.95) {
+            layer = 2; // 15% chance for third layer
         } else {
-            layer = 3; // 10% chance for top layer
+            layer = 3; // 5% chance for top layer
         }
         
         const horizontalIndex = index % horizontalSections;
@@ -120,11 +126,38 @@ export class LevelGenerator {
         let validPosition = false;
         let x, y, width;
         
+        // Weighted platform width distribution favoring longer platforms
+        const widthRoll = Math.random();
+        if (widthRoll < 0.4) {
+            width = 5; // 40% chance for width 5
+        } else if (widthRoll < 0.7) {
+            width = 4; // 30% chance for width 4
+        } else if (widthRoll < 0.9) {
+            width = 3; // 20% chance for width 3
+        } else {
+            width = 2; // 10% chance for width 2
+        }
+        
         // Try to find a non-overlapping position
         while (!validPosition && attempts < 10) {
-            x = Phaser.Math.Between(sectionX, sectionX + sectionWidth - 100);
-            y = Phaser.Math.Between(layerMinY, layerMaxY);
-            width = Phaser.Math.Between(LEVEL_CONFIG.PLATFORM_MIN_WIDTH, LEVEL_CONFIG.PLATFORM_MAX_WIDTH);
+            // Ensure x position accounts for platform width
+            const minSectionX = sectionX + (width * LEVEL_CONFIG.TILE_SIZE / 2);
+            const maxSectionX = sectionX + sectionWidth - (width * LEVEL_CONFIG.TILE_SIZE / 2);
+            
+            if (maxSectionX > minSectionX) {
+                x = Phaser.Math.Between(minSectionX, maxSectionX);
+            } else {
+                x = minSectionX;
+            }
+            
+            // For ground layer (0), ensure some platforms are closer to ground
+            if (layer === 0) {
+                const maxGroundY = this.scene.GROUND_Y - 150; // Minimum 150px from ground
+                const minGroundY = this.scene.GROUND_Y - 250; // Maximum 250px from ground
+                y = Phaser.Math.Between(minGroundY, maxGroundY);
+            } else {
+                y = Phaser.Math.Between(layerMinY, layerMaxY);
+            }
             
             validPosition = this.checkPlatformPosition(x, y, width, usedPositions);
             attempts++;
@@ -136,11 +169,11 @@ export class LevelGenerator {
             // Record the position
             usedPositions.push(this.getPlatformBounds(x, y, width));
             
-            // Add crawler with probability based on layer and distance
-            const distanceFromStart = (x - minX) / (maxX - minX);
+            // Add crawler with probability based on layer and platform width
             const shouldSpawnCrawler = 
-                (layer < 2 && Math.random() < 0.7) || // 70% chance in lower layers
-                (Math.random() < 0.5); // 50% chance in upper layers
+                (layer < 2 && Math.random() < 0.6) || // 60% chance in lower layers
+                (width >= 4 && Math.random() < 0.7) || // 70% chance on wide platforms
+                (Math.random() < 0.4); // 40% base chance
             
             if (shouldSpawnCrawler) {
                 Crawler.createForPlatform(this.scene, platforms[0], width);
@@ -158,12 +191,21 @@ export class LevelGenerator {
 
     checkPlatformPosition(x, y, width, usedPositions) {
         const platformBounds = this.getPlatformBounds(x, y, width);
+        const spacing = LEVEL_CONFIG.TILE_SIZE * 2; // Minimum 2 tiles spacing between platforms
+        
+        // Add spacing to the bounds check
+        const boundsWithSpacing = {
+            left: platformBounds.left - spacing,
+            right: platformBounds.right + spacing,
+            top: platformBounds.top - spacing,
+            bottom: platformBounds.bottom + spacing
+        };
         
         for (const pos of usedPositions) {
-            if (!(platformBounds.right < pos.left || 
-                platformBounds.left > pos.right ||
-                platformBounds.bottom < pos.top ||
-                platformBounds.top > pos.bottom)) {
+            if (!(boundsWithSpacing.right < pos.left || 
+                boundsWithSpacing.left > pos.right ||
+                boundsWithSpacing.bottom < pos.top ||
+                boundsWithSpacing.top > pos.bottom)) {
                 return false;
             }
         }

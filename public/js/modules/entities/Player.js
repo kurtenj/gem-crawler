@@ -122,4 +122,37 @@ export class Player {
             }
         });
     }
+
+    die() {
+        // Disable physics and input during death animation
+        this.sprite.body.enable = false;
+        
+        // Create the "body" sprite that stays on the ground
+        const bodySprite = this.scene.add.sprite(
+            this.sprite.x,
+            this.sprite.y,
+            'tilemap',
+            TILES.PLAYER.PRONE
+        );
+        bodySprite.setScale(this.scene.SCALE);
+        bodySprite.setFlipX(this.sprite.flipX);
+        
+        // Set the main sprite to be the "soul" that floats up
+        this.sprite.setFrame(TILES.PLAYER.PRONE);
+        
+        // Soul rising animation
+        this.scene.tweens.add({
+            targets: this.sprite,
+            alpha: 0,
+            y: this.sprite.y - 40,
+            duration: 1000,
+            ease: 'Quad.easeOut',
+            onComplete: () => {
+                // Clean up and reset the scene after animation
+                bodySprite.destroy();
+                this.scene.scene.restart();
+                this.scene.currentLevel = 1;
+            }
+        });
+    }
 } 
