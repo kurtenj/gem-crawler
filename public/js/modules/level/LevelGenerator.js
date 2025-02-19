@@ -45,17 +45,37 @@ export class LevelGenerator {
         const numPlatforms = Phaser.Math.Between(LEVEL_CONFIG.MIN_PLATFORMS, LEVEL_CONFIG.MAX_PLATFORMS);
         
         // Define the playable area bounds
-        const minX = 200;
+        const minX = 200; // Minimum x position for floating platforms
         const maxX = LEVEL_CONFIG.LEVEL_WIDTH - 200; // Leave space for door
-        const minY = 200;
-        const maxY = this.scene.GROUND_Y - 100;
+        const minY = 150;
         
-        // Divide the level into vertical layers for better platform distribution
-        const numLayers = 3;
+        // Calculate maximum safe platform height
+        const jumpClearance = 176 + (LEVEL_CONFIG.TILE_SIZE) + (LEVEL_CONFIG.TILE_SIZE / 2);
+        const maxY = Math.min(
+            this.scene.GROUND_Y - 100,
+            LEVEL_CONFIG.LEVEL_HEIGHT - jumpClearance
+        );
+        
+        // Create a starting platform at the left edge
+        const startPlatformX = 24; // Exactly 24px from left edge
+        const startPlatformY = this.scene.GROUND_Y - 96; // Exactly 96px from ground
+        const startPlatformWidth = 2; // 2 tiles wide
+        
+        // Create the starting platform with specific tiles for wall extension appearance
+        const startPlatform = this.platformManager.createPlatform(
+            startPlatformX, 
+            startPlatformY, 
+            startPlatformWidth, 
+            false, 
+            true // Flag to indicate this is the starting platform
+        );
+        
+        const startPlatformBounds = this.getPlatformBounds(startPlatformX, startPlatformY, startPlatformWidth);
+        const usedPositions = [startPlatformBounds];
+        
+        // Divide the level into vertical layers with weighted distribution
+        const numLayers = 4;
         const layerHeight = (maxY - minY) / numLayers;
-        
-        // Keep track of platform positions to prevent overlapping
-        const usedPositions = [];
         
         // Create platforms with better distribution
         for (let i = 0; i < numPlatforms; i++) {
@@ -74,11 +94,25 @@ export class LevelGenerator {
     }
 
     generatePlatformInSection(minX, maxX, minY, maxY, numPlatforms, index, numLayers, layerHeight, usedPositions) {
-        const sectionWidth = (maxX - minX) / numPlatforms;
-        const sectionX = minX + (index * sectionWidth);
+        // Calculate horizontal sections based on platform count
+        const horizontalSections = Math.ceil(numPlatforms / numLayers);
+        const sectionWidth = (maxX - minX) / horizontalSections;
         
-        // Choose a random layer for this platform
-        const layer = Phaser.Math.Between(0, numLayers - 1);
+        // Weight lower layers to have more platforms
+        let layer;
+        const layerRoll = Math.random();
+        if (layerRoll < 0.4) {
+            layer = 0; // 40% chance for bottom layer
+        } else if (layerRoll < 0.7) {
+            layer = 1; // 30% chance for second layer
+        } else if (layerRoll < 0.9) {
+            layer = 2; // 20% chance for third layer
+        } else {
+            layer = 3; // 10% chance for top layer
+        }
+        
+        const horizontalIndex = index % horizontalSections;
+        const sectionX = minX + (horizontalIndex * sectionWidth);
         const layerMinY = minY + (layer * layerHeight);
         const layerMaxY = layerMinY + layerHeight;
         
@@ -102,8 +136,15 @@ export class LevelGenerator {
             // Record the position
             usedPositions.push(this.getPlatformBounds(x, y, width));
             
-            // Add crawler
-            Crawler.createForPlatform(this.scene, platforms[0], width);
+            // Add crawler with probability based on layer and distance
+            const distanceFromStart = (x - minX) / (maxX - minX);
+            const shouldSpawnCrawler = 
+                (layer < 2 && Math.random() < 0.7) || // 70% chance in lower layers
+                (Math.random() < 0.5); // 50% chance in upper layers
+            
+            if (shouldSpawnCrawler) {
+                Crawler.createForPlatform(this.scene, platforms[0], width);
+            }
             
             return {
                 platform: platforms[0],

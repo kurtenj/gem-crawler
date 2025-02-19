@@ -108,7 +108,7 @@ export class Crawler {
         if (Math.random() < crawlerChance) {
             // Position crawler in the middle of the platform
             const x = platform.x;
-            const y = platform.y - (LEVEL_CONFIG.TILE_SIZE / 2);
+            const y = platform.y - (LEVEL_CONFIG.TILE_SIZE / 2); // Position exactly on top of platform
             return new Crawler(scene, x, y, platform);
         }
         return null;

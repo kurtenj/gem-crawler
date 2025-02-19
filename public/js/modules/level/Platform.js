@@ -7,12 +7,14 @@ export class Platform {
         this.scene = scene;
     }
 
-    createPlatform(x, y, width, isGround = false) {
+    createPlatform(x, y, width, isGround = false, isStartPlatform = false) {
         let platforms = [];
         const totalWidth = width * LEVEL_CONFIG.TILE_SIZE;
 
         if (isGround) {
             platforms = this.createGroundPlatform(x, y, totalWidth);
+        } else if (isStartPlatform) {
+            platforms = this.createStartPlatform(x, y, width);
         } else {
             platforms = this.createFloatingPlatform(x, y, width);
         }
@@ -122,5 +124,30 @@ export class Platform {
         right.setOrigin(0.5, 0.5);
 
         return [left, center, right];
+    }
+
+    createStartPlatform(x, y, width) {
+        const platforms = [];
+        
+        // Create center piece (first tile)
+        const center = this.scene.platforms.create(x, y, 'tilemap', TILES.PLATFORM.CENTER);
+        center.setScale(LEVEL_CONFIG.SCALE);
+        center.platformWidth = width * LEVEL_CONFIG.TILE_SIZE;
+        center.setOrigin(0.5, 0.5);
+        platforms.push(center);
+        
+        // Create right piece (second tile)
+        const right = this.scene.platforms.create(
+            x + LEVEL_CONFIG.TILE_SIZE,
+            y,
+            'tilemap',
+            TILES.PLATFORM.RIGHT
+        );
+        right.setScale(LEVEL_CONFIG.SCALE);
+        right.platformWidth = width * LEVEL_CONFIG.TILE_SIZE;
+        right.setOrigin(0.5, 0.5);
+        platforms.push(right);
+
+        return platforms;
     }
 } 

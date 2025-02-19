@@ -44,8 +44,10 @@ export class MainScene extends Phaser.Scene {
         const levelGenerator = new LevelGenerator(this);
         levelGenerator.generate();
         
-        // Create player
-        this.player = new Player(this, 100, 300);
+        // Create player on the starting platform
+        const startX = 24 + (LEVEL_CONFIG.TILE_SIZE / 2); // Center of first platform tile (24px + half tile)
+        const startY = this.GROUND_Y - 96 - LEVEL_CONFIG.TILE_SIZE; // Platform Y (GROUND_Y - 96) minus one full tile height
+        this.player = new Player(this, startX, startY);
         
         // Add colliders
         this.physics.add.collider(this.player.sprite, this.platforms);
