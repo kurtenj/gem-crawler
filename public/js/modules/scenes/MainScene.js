@@ -115,7 +115,7 @@ export class MainScene extends Phaser.Scene {
             duration: 200,
             yoyo: true,
             onComplete: () => {
-                this.door.setFrame(TILES.DOOR.UNLOCKED);
+                this.door.setFrame(TILES.BASIC.DOOR.UNLOCKED);
             }
         });
     }
@@ -123,7 +123,7 @@ export class MainScene extends Phaser.Scene {
     tryEnterDoor(player, door) {
         if (this.hasKey) {
             this.hasKey = false;
-            door.setFrame(TILES.DOOR.OPEN);
+            door.setFrame(TILES.BASIC.DOOR.OPEN);
             this.player.enterDoor(door);
             this.currentLevel++;
             
@@ -146,7 +146,10 @@ export class MainScene extends Phaser.Scene {
     }
 
     update(time, delta) {
-        this.player.update(time, this.cursors);
+        // Update player
+        if (this.player) {
+            this.player.update(time, this.cursors);
+        }
         
         // Update crawler animations and movement
         this.crawlers.getChildren().forEach(crawler => {

@@ -5,7 +5,7 @@ import { LEVEL_CONFIG } from '../config.js';
 export class Crawler {
     constructor(scene, x, y, platform) {
         this.scene = scene;
-        this.sprite = scene.crawlers.create(x, y, 'tilemap', TILES.CRAWLER.IDLE);
+        this.sprite = scene.crawlers.create(x, y, 'tilemap', TILES.ENEMIES.CRAWLER.IDLE);
         this.setupSprite();
         this.setupPatrol(platform);
         this.createAnimations();
@@ -49,15 +49,17 @@ export class Crawler {
     }
 
     createAnimations() {
-        this.scene.anims.create({
-            key: 'crawler-walk',
-            frames: [
-                { key: 'tilemap', frame: TILES.CRAWLER.WALK_1 },
-                { key: 'tilemap', frame: TILES.CRAWLER.WALK_2 }
-            ],
-            frameRate: 6,
-            repeat: -1
-        });
+        if (!this.scene.anims.exists('crawler-walk')) {
+            this.scene.anims.create({
+                key: 'crawler-walk',
+                frames: [
+                    { key: 'tilemap', frame: TILES.ENEMIES.CRAWLER.WALK.START },
+                    { key: 'tilemap', frame: TILES.ENEMIES.CRAWLER.WALK.END }
+                ],
+                frameRate: 6,
+                repeat: -1
+            });
+        }
         
         this.sprite.anims.play('crawler-walk', true);
     }
@@ -101,6 +103,26 @@ export class Crawler {
 
         // Update flip based on direction
         this.sprite.setFlipX(this.sprite.direction === -1);
+    }
+
+    die() {
+        if (!this.sprite.isDead) {
+            this.sprite.isDead = true;
+            this.sprite.setVelocity(0, 0);
+            this.sprite.setFrame(TILES.ENEMIES.CRAWLER.DEAD);
+            this.sprite.body.enable = false;
+            
+            // Fade out and destroy
+            this.scene.tweens.add({
+                targets: this.sprite,
+                alpha: 0,
+                duration: 500,
+                ease: 'Power2',
+                onComplete: () => {
+                    this.sprite.destroy();
+                }
+            });
+        }
     }
 
     static createForPlatform(scene, platform, width) {

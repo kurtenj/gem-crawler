@@ -242,7 +242,7 @@ export class LevelGenerator {
             keyPlatform.x,
             keyPlatform.y - LEVEL_CONFIG.TILE_SIZE,
             'tilemap',
-            TILES.KEY
+            TILES.BASIC.KEY.LARGE
         );
         this.scene.key.setScale(LEVEL_CONFIG.SCALE);
         this.scene.key.setOrigin(0.5, 0.5);
@@ -281,7 +281,7 @@ export class LevelGenerator {
             doorX,
             this.scene.GROUND_Y - LEVEL_CONFIG.TILE_SIZE,
             'tilemap',
-            TILES.DOOR.LOCKED
+            TILES.BASIC.DOOR.LOCKED
         );
         this.scene.door.setScale(LEVEL_CONFIG.SCALE);
         this.scene.door.setOrigin(0.5, 0.5);

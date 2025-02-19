@@ -1,48 +1,168 @@
 // Tile Manifest for 20x20 tilemap (320x320px, 16x16px per tile)
+
+// Constants for tile types
+const TILE_TYPES = {
+    BLANK: 0,
+    COLLECTIBLE: {
+        COIN: {
+            SMALL: 1,
+            LARGE: 2
+        },
+        EMERALD: {
+            TINY: 20,
+            SMALL: 21,
+            LARGE: 22
+        },
+        HEART: {
+            TINY: 40,
+            SMALL: 41,
+            LARGE: 42
+        }
+    },
+    DOOR: {
+        LOCKED: 57,
+        UNLOCKED: 56,
+        OPEN: 58
+    },
+    KEY: {
+        LARGE: 96,
+        SMALL: 97
+    }
+};
+
+// Constants for player states
+const PLAYER_STATES = {
+    DEFAULT: {
+        IDLE: 240,
+        WALK: {
+            START: 241,
+            END: 242
+        },
+        RUN: {
+            START: 243,
+            END: 244
+        },
+        JUMP: 245,
+        PRONE: 246
+    },
+    DIAMOND: {
+        IDLE: 260,
+        WALK: {
+            START: 261,
+            END: 262
+        },
+        RUN: {
+            START: 263,
+            END: 264
+        },
+        JUMP: 265,
+        PRONE: 266
+    },
+    EMERALD: {
+        IDLE: 280,
+        WALK: {
+            START: 281,
+            END: 282
+        },
+        RUN: {
+            START: 283,
+            END: 284
+        },
+        JUMP: 285,
+        PRONE: 286
+    },
+    RUBY: {
+        IDLE: 300,
+        WALK: {
+            START: 301,
+            END: 302
+        },
+        RUN: {
+            START: 303,
+            END: 304
+        },
+        JUMP: 305,
+        PRONE: 306
+    }
+};
+
+// Constants for enemy types
+const ENEMY_TYPES = {
+    CRAWLER: {
+        IDLE: 320,
+        WALK: {
+            START: 321,
+            END: 322
+        },
+        JUMP: 323,
+        DEAD: 324,
+        FLY: {
+            START: 380,
+            END: 381,
+            DEAD: 382
+        }
+    },
+    WALKER: {
+        IDLE: 340,
+        WALK: {
+            START: 341,
+            END: 342
+        },
+        JUMP: 343,
+        DEAD: 344
+    },
+    ARMORED: {
+        IDLE: 360,
+        WALK: {
+            START: 361,
+            END: 362
+        },
+        JUMP: 363,
+        SQUASHED: 364,
+        DEAD: 365,
+        FLIPPED: 366
+    },
+    FLYER: {
+        FLY: {
+            START: 383,
+            END: 384,
+            DEAD: 385
+        }
+    },
+    PARASHOOT: 386
+};
+
+// Constants for interactive elements
+const INTERACTIVE = {
+    FAN: {
+        SIDE: {
+            LEFT: 387,
+            RIGHT: 388
+        },
+        FRONT: {
+            TYPE_1: 369,
+            TYPE_2: 370
+        }
+    },
+    CHEST: {
+        CLOSED: 389,
+        OPEN: 390
+    }
+};
+
 const TileManifest = {
     // Semantic grouping of tiles
     TILES: {
-        BASIC: {
-            BLANK: 0,
-            SMALL_COIN: 1,
-            LARGE_COIN: 2,
-            EMERALD: {
-                TINY: 20,
-                SMALL: 21,
-                LARGE: 22
-            },
-            HEART: {
-                TINY: 40,
-                SMALL: 41,
-                LARGE: 42
-            }
-        },
+        BASIC: TILE_TYPES,
         PLATFORM: {
-            SINGLE: 63,  // Using the floating platform default single tile
-            LEFT: 64,    // Using the floating platform default left tile
-            CENTER: 65,  // Using the floating platform default center tile
-            RIGHT: 66    // Using the floating platform default right tile
+            SINGLE: 63,
+            LEFT: 64,
+            CENTER: 65,
+            RIGHT: 66
         },
-        PLAYER: {
-            IDLE: 240,      // Player default idle
-            WALK_1: 241,    // Player default walk start
-            WALK_2: 242,    // Player default walk end
-            JUMP: 245,      // Player default jump
-            PRONE: 246      // Player default prone
-        },
-        CRAWLER: {
-            IDLE: 320,      // Enemy crawler idle
-            WALK_1: 321,    // Enemy crawler walk start
-            WALK_2: 322,    // Enemy crawler walk end
-            JUMP: 323,      // Enemy crawler jump
-            DEAD: 324       // Enemy crawler dead
-        },
-        DOOR: {
-            LOCKED: 57,     // Door locked closed
-            UNLOCKED: 56,   // Door unlocked closed
-            OPEN: 58        // Door unlocked open
-        },
-        KEY: 96,            // Key large
+        PLAYER: PLAYER_STATES,
+        ENEMIES: ENEMY_TYPES,
+        INTERACTIVE: INTERACTIVE,
         STRUCTURAL: {
             CHAIN: {
                 TOP: 3,
@@ -132,33 +252,6 @@ const TileManifest = {
                 TOP: 6
             }
         },
-        BOXES: {
-            SELECTED: {
-                FULL: {
-                    EXCLAMATION: 7,
-                    COIN: 8,
-                    PLAIN: 9,
-                    X_MARK: 10
-                },
-                EMPTY: {
-                    EXCLAMATION: 27,
-                    COIN: 28,
-                    PLAIN: 29,
-                    X_MARK: 30
-                },
-                REINFORCED_EMPTY: 11,
-                CHECKERED: 51
-            },
-            UNSELECTED: {
-                FULL: {
-                    EXCLAMATION: 47,
-                    COIN: 48,
-                    PLAIN: 49,
-                    X_MARK: 50
-                },
-                REINFORCED_EMPTY: 31
-            }
-        },
         SCENERY: {
             BILLBOARD: {
                 TOP: 12,
@@ -202,51 +295,6 @@ const TileManifest = {
                     GROUP: 54
                 }
             }
-        },
-        ENEMIES: {
-            WALKER: {
-                IDLE: 340,
-                WALK: {
-                    START: 341,
-                    END: 342
-                },
-                JUMP: 343,
-                DEAD: 344
-            },
-            ARMORED: {
-                IDLE: 360,
-                WALK: {
-                    START: 361,
-                    END: 362
-                },
-                JUMP: 363,
-                DEAD: 364
-            },
-            FLYER: {
-                FLY: {
-                    START: 383,
-                    END: 384,
-                    DEAD: 385
-                }
-            },
-            PARASHOOT: 386
-        },
-        INTERACTIVE: {
-            FAN: {
-                SIDE: {
-                    LEFT: 387,
-                    RIGHT: 388
-                }
-            },
-            CHEST: {
-                CLOSED: 389,
-                OPEN: 390
-            }
-        },
-        PROJECTILES: {
-            TINY: 20,
-            SMALL: 21,
-            LARGE: 22
         },
         BACKGROUND: {
             MECHANICAL: {
@@ -322,6 +370,57 @@ const TileManifest = {
                     LEFT: 127,
                     CENTER: 128,
                     RIGHT: 129
+                }
+            },
+            INDUSTRIAL: {
+                TOP: {
+                    LEFT: 351,
+                    CENTER: 352,
+                    RIGHT: 353
+                },
+                CENTER: {
+                    LEFT: 371,
+                    CENTER: 372,
+                    RIGHT: 373
+                },
+                BOTTOM: {
+                    LEFT: 391,
+                    CENTER: 392,
+                    RIGHT: 393
+                }
+            },
+            TILE: {
+                TOP: {
+                    LEFT: 354,
+                    CENTER: 355,
+                    RIGHT: 356
+                },
+                CENTER: {
+                    LEFT: 374,
+                    CENTER: 375,
+                    RIGHT: 376
+                },
+                BOTTOM: {
+                    LEFT: 394,
+                    CENTER: 395,
+                    RIGHT: 396
+                }
+            },
+            METAL: {
+                TOP: {
+                    LEFT: 357,
+                    CENTER: 358,
+                    RIGHT: 359
+                },
+                CENTER: {
+                    LEFT: 377,
+                    CENTER: 378,
+                    RIGHT: 379
+                },
+                BOTTOM: {
+                    LEFT: 397,
+                    CENTER: 398,
+                    RIGHT: 399
                 }
             }
         }
@@ -698,19 +797,19 @@ const TileManifest = {
             COL_4: 304,   // Description: Player ruby fire run end
             COL_5: 305,   // Description: Player ruby fire jump
             COL_6: 306,   // Description: Player ruby fire prone
-            COL_7: 307,   // Description: 
-            COL_8: 308,   // Description: 
-            COL_9: 309,   // Description: 
-            COL_10: 310,  // Description: 
-            COL_11: 311,  // Description: 
-            COL_12: 312,  // Description: 
-            COL_13: 313,  // Description: 
-            COL_14: 314,  // Description: 
-            COL_15: 315,  // Description: 
-            COL_16: 316,  // Description: 
-            COL_17: 317,  // Description: 
-            COL_18: 318,  // Description: 
-            COL_19: 319   // Description: 
+            COL_7: 307,   // Description: Fan large 1 bottom left
+            COL_8: 308,   // Description: Fan large 1 bottom right
+            COL_9: 309,   // Description: Pillar gear gear 1
+            COL_10: 310,  // Description: Background grass bottom left
+            COL_11: 311,  // Description: Background grass bottom center
+            COL_12: 312,  // Description: Background grass bottom right
+            COL_13: 313,  // Description: Background grass single bottom
+            COL_14: 314,  // Description: Accent curve bottom left
+            COL_15: 315,  // Description: Background brick crumbling bottom left
+            COL_16: 316,  // Description: Background brick crumbling bottom center
+            COL_17: 317,  // Description: Background brick crumbling bottom right
+            COL_18: 318,  // Description: Background brick crumbling single bottom
+            COL_19: 319   // Description: Accent brick bottom left
         },
 
         // Row 16 (320-339)
@@ -720,21 +819,21 @@ const TileManifest = {
             COL_2: 322,   // Description: Enemy crawler walk end
             COL_3: 323,   // Description: Enemy crawler jump
             COL_4: 324,   // Description: Enemy crawler dead
-            COL_5: 325,   // Description: 
-            COL_6: 326,   // Description: 
-            COL_7: 327,   // Description: 
-            COL_8: 328,   // Description: 
-            COL_9: 329,   // Description: 
-            COL_10: 330,  // Description: 
-            COL_11: 331,  // Description: 
-            COL_12: 332,  // Description: 
-            COL_13: 333,  // Description: 
-            COL_14: 334,  // Description: 
-            COL_15: 335,  // Description: 
-            COL_16: 336,  // Description: 
-            COL_17: 337,  // Description: 
-            COL_18: 338,  // Description: 
-            COL_19: 339   // Description: 
+            COL_5: 325,   // Description: Web top
+            COL_6: 326,   // Description: Moth
+            COL_7: 327,   // Description: Fan large 2 top left
+            COL_8: 328,   // Description: Fan large 2 top right
+            COL_9: 329,   // Description: Pillar gear straight
+            COL_10: 330,  // Description: Platform grass left
+            COL_11: 331,  // Description: Platform grass center
+            COL_12: 332,  // Description: Platform grass right
+            COL_13: 333,  // Description: Platform grass single
+            COL_14: 334,  // Description: Accent curve top left
+            COL_15: 335,  // Description: Platform brick crumbling left
+            COL_16: 336,  // Description: Platform brick crumbling center
+            COL_17: 337,  // Description: Platform brick crumbling right
+            COL_18: 338,  // Description: Platform brick crumbling single
+            COL_19: 339   // Description: Accent brick top left
         },
 
         // Row 17 (340-359)
@@ -744,21 +843,21 @@ const TileManifest = {
             COL_2: 342,   // Description: Enemy walker walk end
             COL_3: 343,   // Description: Enemy walker jump
             COL_4: 344,   // Description: Enemy walker dead
-            COL_5: 345,   // Description: 
-            COL_6: 346,   // Description: 
-            COL_7: 347,   // Description: 
-            COL_8: 348,   // Description: 
-            COL_9: 349,   // Description: 
-            COL_10: 350,  // Description: 
-            COL_11: 351,  // Description: 
-            COL_12: 352,  // Description: 
-            COL_13: 353,  // Description: 
-            COL_14: 354,  // Description: 
-            COL_15: 355,  // Description: 
-            COL_16: 356,  // Description: 
-            COL_17: 357,  // Description: 
-            COL_18: 358,  // Description: 
-            COL_19: 359   // Description: 
+            COL_5: 345,   // Description: Web bottom
+            COL_6: 346,   // Description: Fly
+            COL_7: 347,   // Description: Fan large 2 bottom left
+            COL_8: 348,   // Description: Fan large 2 bottom right
+            COL_9: 349,   // Description: Fan 1 side
+            COL_10: 350,  // Description: Fan 2 side
+            COL_11: 351,  // Description: Foreground industrial top left
+            COL_12: 352,  // Description: Foreground industrial top center
+            COL_13: 353,  // Description: Foreground industrial top right
+            COL_14: 354,  // Description: Foreground tile top left
+            COL_15: 355,  // Description: Foreground tile top center
+            COL_16: 356,  // Description: Foreground tile top right
+            COL_17: 357,  // Description: Foreground metal top left
+            COL_18: 358,  // Description: Foreground metal top center
+            COL_19: 359   // Description: Foreground metal top right
         },
 
         // Row 18 (360-379)
@@ -767,22 +866,22 @@ const TileManifest = {
             COL_1: 361,   // Description: Enemy armored walk start
             COL_2: 362,   // Description: Enemy armored walk end
             COL_3: 363,   // Description: Enemy armored jump
-            COL_4: 364,   // Description: Enemy armored dead
-            COL_5: 365,   // Description: 
-            COL_6: 366,   // Description: 
-            COL_7: 367,   // Description: 
-            COL_8: 368,   // Description: 
-            COL_9: 369,   // Description: 
-            COL_10: 370,  // Description: 
-            COL_11: 371,  // Description: 
-            COL_12: 372,  // Description: 
-            COL_13: 373,  // Description: 
-            COL_14: 374,  // Description: 
-            COL_15: 375,  // Description: 
-            COL_16: 376,  // Description: 
-            COL_17: 377,  // Description: 
-            COL_18: 378,  // Description: 
-            COL_19: 379   // Description: 
+            COL_4: 364,   // Description: Enemy armored squashed
+            COL_5: 365,   // Description: Enemy armored dead
+            COL_6: 366,   // Description: Enemy armored flipped
+            COL_7: 367,   // Description: Fan side 1 left
+            COL_8: 368,   // Description: Fan side 1 right
+            COL_9: 369,   // Description: Fan 1 front
+            COL_10: 370,  // Description: Fan 2 front
+            COL_11: 371,  // Description: Foreground industrial center left 
+            COL_12: 372,  // Description: Foreground industrial center center
+            COL_13: 373,  // Description: Foreground industrial center right
+            COL_14: 374,  // Description: Foreground tile center left
+            COL_15: 375,  // Description: Foreground tile center center
+            COL_16: 376,  // Description: Foreground tile center right
+            COL_17: 377,  // Description: Foreground metal center left
+            COL_18: 378,  // Description: Foreground metal center center
+            COL_19: 379   // Description: Foreground metal center right
         },
 
         // Row 19 (380-399)
@@ -794,19 +893,19 @@ const TileManifest = {
             COL_4: 384,   // Description: Enemy flyer fly end
             COL_5: 385,   // Description: Enemy flyer fly dead
             COL_6: 386,   // Description: Enemy parashoot
-            COL_7: 387,   // Description: fan side 2 left
-            COL_8: 388,   // Description: fan side 2 right
-            COL_9: 389,   // Description: chest closed
-            COL_10: 390,  // Description: chest open
-            COL_11: 391,  // Description: 
-            COL_12: 392,  // Description: 
-            COL_13: 393,  // Description: 
-            COL_14: 394,  // Description: 
-            COL_15: 395,  // Description: 
-            COL_16: 396,  // Description: 
-            COL_17: 397,  // Description: 
-            COL_18: 398,  // Description: 
-            COL_19: 399   // Description: 
+            COL_7: 387,   // Description: Fan side 2 left
+            COL_8: 388,   // Description: Fan side 2 right
+            COL_9: 389,   // Description: Chest closed
+            COL_10: 390,  // Description: Chest open
+            COL_11: 391,  // Description: Foreground industrial bottom left
+            COL_12: 392,  // Description: Foreground industrial bottom center
+            COL_13: 393,  // Description: Foreground industrial bottom right
+            COL_14: 394,  // Description: Foreground tile bottom left
+            COL_15: 395,  // Description: Foreground tile bottom center
+            COL_16: 396,  // Description: Foreground tile bottom right
+            COL_17: 397,  // Description: Foreground metal bottom left
+            COL_18: 398,  // Description: Foreground metal bottom center
+            COL_19: 399   // Description: Foreground metal bottom right
         }
     },
 
@@ -822,7 +921,6 @@ const TileManifest = {
         return row * 20 + col;
     },
 
-    // Convenience method to get any tile by row and column
     getTile: function(row, col) {
         const rowKey = `ROW_${row}`;
         const colKey = `COL_${col}`;
@@ -835,7 +933,7 @@ for (let row = 1; row < 20; row++) {
     TileManifest.GRID[`ROW_${row}`] = {};
     for (let col = 0; col < 20; col++) {
         const tileNumber = row * 20 + col;
-        TileManifest.GRID[`ROW_${row}`][`COL_${col}`] = tileNumber;  // Description can be added later
+        TileManifest.GRID[`ROW_${row}`][`COL_${col}`] = tileNumber;
     }
 }
 

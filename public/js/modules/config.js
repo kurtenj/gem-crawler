@@ -13,7 +13,8 @@ export const GAME_CONFIG = {
 };
 
 export const MOVEMENT_CONFIG = {
-    WALK_SPEED: 200,          // Base movement speed
+    WALK_SPEED: 150,          // Reduced from 200 for slower walking
+    RUN_SPEED: 350,          // New constant for running
     JUMP_VELOCITY: -460,      // Initial jump force
     AIR_CONTROL: 0.8,         // Air movement multiplier
     ACCELERATION: 1500,       // Ground acceleration

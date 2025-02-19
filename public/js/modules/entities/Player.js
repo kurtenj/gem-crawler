@@ -5,11 +5,14 @@ const { TILES } = TileManifest;
 export class Player {
     constructor(scene, x, y) {
         this.scene = scene;
-        this.sprite = scene.physics.add.sprite(x, y, 'tilemap', TILES.PLAYER.IDLE);
+        this.sprite = scene.physics.add.sprite(x, y, 'tilemap', TILES.PLAYER.DEFAULT.IDLE);
         this.lastGroundedTime = 0;
         this.lastJumpPressedTime = 0;
         this.setupSprite();
         this.createAnimations();
+        
+        // Add shift key for running
+        this.shiftKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
     }
 
     setupSprite() {
@@ -22,24 +25,41 @@ export class Player {
         // Set exact 48x48 collision box
         this.sprite.body.setSize(16, 16); // 16x16 is the base sprite size
         this.sprite.body.setOffset(0, 0); // Center the collision box
-        this.sprite.body.setMaxVelocity(MOVEMENT_CONFIG.WALK_SPEED, 800);
+        this.sprite.body.setMaxVelocity(MOVEMENT_CONFIG.RUN_SPEED, 800);
         this.sprite.body.setDragX(MOVEMENT_CONFIG.DRAG);
     }
 
     createAnimations() {
-        this.scene.anims.create({
-            key: 'walk',
-            frames: [
-                { key: 'tilemap', frame: TILES.PLAYER.WALK_1 },
-                { key: 'tilemap', frame: TILES.PLAYER.WALK_2 }
-            ],
-            frameRate: 8,
-            repeat: -1
-        });
+        if (!this.scene.anims.exists('walk')) {
+            this.scene.anims.create({
+                key: 'walk',
+                frames: [
+                    { key: 'tilemap', frame: TILES.PLAYER.DEFAULT.WALK.START },
+                    { key: 'tilemap', frame: TILES.PLAYER.DEFAULT.WALK.END }
+                ],
+                frameRate: 6,
+                repeat: -1
+            });
+        }
+        
+        if (!this.scene.anims.exists('run')) {
+            this.scene.anims.create({
+                key: 'run',
+                frames: [
+                    { key: 'tilemap', frame: TILES.PLAYER.DEFAULT.RUN.START },
+                    { key: 'tilemap', frame: TILES.PLAYER.DEFAULT.RUN.START },
+                    { key: 'tilemap', frame: TILES.PLAYER.DEFAULT.RUN.END },
+                    { key: 'tilemap', frame: TILES.PLAYER.DEFAULT.RUN.END }
+                ],
+                frameRate: 10,
+                repeat: -1
+            });
+        }
     }
 
     update(time, cursors) {
         const onGround = this.sprite.body.touching.down;
+        const isRunning = this.shiftKey.isDown;
         
         // Update grounded time for coyote time
         if (onGround) {
@@ -60,7 +80,7 @@ export class Player {
         // Check for buffered jump or regular jump
         if (time - this.lastJumpPressedTime <= MOVEMENT_CONFIG.JUMP_BUFFER_TIME && canJump) {
             this.sprite.setVelocityY(MOVEMENT_CONFIG.JUMP_VELOCITY);
-            this.sprite.setFrame(TILES.PLAYER.JUMP);
+            this.sprite.setFrame(TILES.PLAYER.DEFAULT.JUMP);
             this.lastJumpPressedTime = 0; // Clear the buffer
             this.lastGroundedTime = 0;    // Clear coyote time
         }
@@ -72,24 +92,25 @@ export class Player {
 
         // Horizontal movement with air control
         const acceleration = onGround ? MOVEMENT_CONFIG.ACCELERATION : MOVEMENT_CONFIG.AIR_ACCELERATION;
-        const maxSpeed = onGround ? MOVEMENT_CONFIG.WALK_SPEED : (MOVEMENT_CONFIG.WALK_SPEED * MOVEMENT_CONFIG.AIR_CONTROL);
+        const baseSpeed = isRunning ? MOVEMENT_CONFIG.RUN_SPEED : MOVEMENT_CONFIG.WALK_SPEED;
+        const maxSpeed = onGround ? baseSpeed : (baseSpeed * MOVEMENT_CONFIG.AIR_CONTROL);
 
         if (cursors.left.isDown) {
             this.sprite.setAccelerationX(-acceleration);
             this.sprite.setFlipX(true);
             if (onGround) {
-                this.sprite.anims.play('walk', true);
+                this.sprite.anims.play(isRunning ? 'run' : 'walk', true);
             }
         } else if (cursors.right.isDown) {
             this.sprite.setAccelerationX(acceleration);
             this.sprite.setFlipX(false);
             if (onGround) {
-                this.sprite.anims.play('walk', true);
+                this.sprite.anims.play(isRunning ? 'run' : 'walk', true);
             }
         } else {
             this.sprite.setAccelerationX(0);
             if (onGround) {
-                this.sprite.setFrame(TILES.PLAYER.IDLE);
+                this.sprite.setFrame(TILES.PLAYER.DEFAULT.IDLE);
                 this.sprite.anims.stop();
             }
         }
@@ -101,7 +122,7 @@ export class Player {
 
         // Update jump animation
         if (!onGround) {
-            this.sprite.setFrame(TILES.PLAYER.JUMP);
+            this.sprite.setFrame(TILES.PLAYER.DEFAULT.JUMP);
         }
     }
 
@@ -132,13 +153,13 @@ export class Player {
             this.sprite.x,
             this.sprite.y,
             'tilemap',
-            TILES.PLAYER.PRONE
+            TILES.PLAYER.DEFAULT.PRONE
         );
         bodySprite.setScale(this.scene.SCALE);
         bodySprite.setFlipX(this.sprite.flipX);
         
         // Set the main sprite to be the "soul" that floats up
-        this.sprite.setFrame(TILES.PLAYER.PRONE);
+        this.sprite.setFrame(TILES.PLAYER.DEFAULT.PRONE);
         
         // Soul rising animation
         this.scene.tweens.add({

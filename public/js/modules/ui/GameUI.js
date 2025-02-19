@@ -61,7 +61,7 @@ export class GameUI {
             itemStartX,
             itemY,
             'tilemap',
-            TILES.KEY
+            TILES.BASIC.KEY.LARGE
         );
         this.keyIcon.setScale(2);
         this.keyIcon.setAlpha(0.3);
@@ -72,7 +72,7 @@ export class GameUI {
             itemStartX + itemSpacing,
             itemY,
             'tilemap',
-            TILES.BASIC.EMERALD.LARGE
+            TILES.BASIC.COLLECTIBLE.EMERALD.LARGE
         );
         this.emeraldIcon.setScale(2);
         this.emeraldIcon.setAlpha(0.3);
@@ -83,7 +83,7 @@ export class GameUI {
             itemStartX + (itemSpacing * 2),
             itemY,
             'tilemap',
-            82 // Ruby tile index
+            TILES.BASIC.COLLECTIBLE.HEART.LARGE // Using heart for ruby temporarily
         );
         this.rubyIcon.setScale(2);
         this.rubyIcon.setAlpha(0.3);
@@ -94,7 +94,7 @@ export class GameUI {
             itemStartX + (itemSpacing * 3),
             itemY,
             'tilemap',
-            102 // Diamond tile index
+            TILES.BASIC.COLLECTIBLE.COIN.LARGE // Using coin for diamond temporarily
         );
         this.diamondIcon.setScale(2);
         this.diamondIcon.setAlpha(0.3);
