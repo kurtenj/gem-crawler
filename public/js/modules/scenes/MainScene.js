@@ -1,6 +1,7 @@
 import { LEVEL_CONFIG } from '../config.js';
 import { Player } from '../entities/Player.js';
 import { LevelGenerator } from '../level/LevelGenerator.js';
+import { GameUI } from '../ui/GameUI.js';
 import TileManifest from '../../tileManifest.js';
 const { TILES } = TileManifest;
 
@@ -13,6 +14,8 @@ export class MainScene extends Phaser.Scene {
         this.key = null;
         this.door = null;
         this.hasKey = false;
+        this.currentLevel = 1;
+        this.currentTheme = 'Dungeon';
         this.SCALE = LEVEL_CONFIG.SCALE;
         this.TILE_SIZE = LEVEL_CONFIG.TILE_SIZE;
         this.CANVAS_WIDTH = LEVEL_CONFIG.CANVAS_WIDTH;
@@ -65,14 +68,44 @@ export class MainScene extends Phaser.Scene {
         // Set world bounds
         this.physics.world.setBounds(0, 0, this.LEVEL_WIDTH, this.LEVEL_HEIGHT);
 
+        // Create UI
+        this.ui = new GameUI(this);
+        this.ui.updateLevel(this.currentLevel);
+        this.ui.updateTheme(this.currentTheme);
+        this.ui.setKeyStatus(this.hasKey);
+
         console.log('Scene creation complete');
     }
 
     collectKey(player, key) {
-        this.hasKey = true;
-        key.destroy();
+        // Stop the existing floating animations
+        this.tweens.killTweensOf(key);
         
-        // Play collection effect
+        // Set hasKey flag and update UI
+        this.hasKey = true;
+        this.ui.setKeyStatus(true);
+        
+        // Calculate the viewport-relative position for the UI key icon
+        const targetX = this.cameras.main.scrollX + this.ui.keyIcon.x;
+        const targetY = this.cameras.main.scrollY + this.ui.keyIcon.y;
+        
+        // Play collection animation
+        this.tweens.add({
+            targets: key,
+            x: targetX,
+            y: targetY,
+            alpha: 0,
+            angle: 180,
+            scaleX: 0.5,
+            scaleY: 0.5,
+            duration: 600,
+            ease: 'Linear',
+            onComplete: () => {
+                key.destroy();
+            }
+        });
+        
+        // Play door effect
         this.tweens.add({
             targets: this.door,
             scaleX: this.SCALE * 1.2,
@@ -90,12 +123,16 @@ export class MainScene extends Phaser.Scene {
             this.hasKey = false;
             door.setFrame(TILES.DOOR.OPEN);
             this.player.enterDoor(door);
+            this.currentLevel++;
+            
+            // Scene will restart, UI will update in create()
         }
     }
 
     handleEnemyCollision(player, enemy) {
         if (!enemy.isDead) {
             this.scene.restart();
+            this.currentLevel = 1; // Reset level on death
         }
     }
 

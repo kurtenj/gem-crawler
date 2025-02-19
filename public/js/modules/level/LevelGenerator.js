@@ -166,12 +166,22 @@ export class LevelGenerator {
         this.scene.key.body.setSize(48, 48, true);
         this.scene.key.body.setOffset(-16, -16);
         this.scene.key.body.setAllowGravity(false);
-        
-        // Add floating animation to key
+
+        // Add floating animation
         this.scene.tweens.add({
             targets: this.scene.key,
             y: this.scene.key.y - 10,
             duration: 1500,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1
+        });
+
+        // Add gentle rotation
+        this.scene.tweens.add({
+            targets: this.scene.key,
+            angle: 5,
+            duration: 2000,
             ease: 'Sine.easeInOut',
             yoyo: true,
             repeat: -1
