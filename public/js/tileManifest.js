@@ -17,6 +17,32 @@ const TileManifest = {
                 LARGE: 42
             }
         },
+        PLATFORM: {
+            SINGLE: 63,  // Using the floating platform default single tile
+            LEFT: 64,    // Using the floating platform default left tile
+            CENTER: 65,  // Using the floating platform default center tile
+            RIGHT: 66    // Using the floating platform default right tile
+        },
+        PLAYER: {
+            IDLE: 240,      // Player default idle
+            WALK_1: 241,    // Player default walk start
+            WALK_2: 242,    // Player default walk end
+            JUMP: 245,      // Player default jump
+            PRONE: 246      // Player default prone
+        },
+        CRAWLER: {
+            IDLE: 320,      // Enemy crawler idle
+            WALK_1: 321,    // Enemy crawler walk start
+            WALK_2: 322,    // Enemy crawler walk end
+            JUMP: 323,      // Enemy crawler jump
+            DEAD: 324       // Enemy crawler dead
+        },
+        DOOR: {
+            LOCKED: 57,     // Door locked closed
+            UNLOCKED: 56,   // Door unlocked closed
+            OPEN: 58        // Door unlocked open
+        },
+        KEY: 96,            // Key large
         STRUCTURAL: {
             CHAIN: {
                 TOP: 3,
@@ -177,31 +203,7 @@ const TileManifest = {
                 }
             }
         },
-        DOORS: {
-            UNLOCKED: {
-                CLOSED: 56,
-                OPEN: 58
-            },
-            LOCKED: {
-                CLOSED: 57,
-                OPEN: 59
-            }
-        },
         ENEMIES: {
-            CRAWLER: {
-                IDLE: 320,
-                WALK: {
-                    START: 321,
-                    END: 322
-                },
-                JUMP: 323,
-                DEAD: 324,
-                FLY: {
-                    START: 380,
-                    END: 381,
-                    DEAD: 382
-                }
-            },
             WALKER: {
                 IDLE: 340,
                 WALK: {
