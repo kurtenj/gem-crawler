@@ -31,7 +31,6 @@ export class LevelGenerator {
         if (this.scene.key) this.scene.key.destroy();
         if (this.scene.door) this.scene.door.destroy();
         this.scene.hasKey = false;
-        this.scene.themeManager.clearDecorations();
     }
 
     generateGround() {
@@ -49,11 +48,6 @@ export class LevelGenerator {
                 theme
             );
             groundPlatforms.push(platforms[0]);
-            
-            // Add decorations with a lower chance for ground
-            if (Math.random() < 0.2) {
-                this.scene.themeManager.addDecorations(x, this.scene.GROUND_Y, true);
-            }
         }
         return groundPlatforms;
     }
@@ -110,15 +104,6 @@ export class LevelGenerator {
             if (platformData) {
                 floatingPlatforms.push(platformData);
                 platformsByLayer[platformData.layer].push(platformData);
-                
-                // Add decorations with a higher chance for floating platforms
-                if (Math.random() < 0.4) {
-                    this.scene.themeManager.addDecorations(
-                        platformData.platform.x,
-                        platformData.platform.y,
-                        false
-                    );
-                }
             }
         }
 
@@ -216,11 +201,6 @@ export class LevelGenerator {
             
             if (shouldSpawnCrawler) {
                 Crawler.createForPlatform(this.scene, platforms[0], width);
-            }
-            
-            // Add decorations with a higher chance for floating platforms
-            if (Math.random() < 0.4) {
-                this.scene.themeManager.addDecorations(x, y, false);
             }
             
             return {
@@ -419,11 +399,6 @@ export class LevelGenerator {
                 platformsByLayer[layer].push(platformData);
                 allPlatforms.push(platformData);
                 
-                // Add decorations for the new platform
-                if (Math.random() < 0.4) {
-                    this.scene.themeManager.addDecorations(x, y, false);
-                }
-                
                 console.log(`Added accessibility platform at layer ${layer}:`, { x, y, width });
             }
         }
@@ -463,11 +438,6 @@ export class LevelGenerator {
                 const platformData = { platform, layer, width };
                 platformsByLayer[layer].push(platformData);
                 allPlatforms.push(platformData);
-                
-                // Add decorations for the bridge platform
-                if (Math.random() < 0.4) {
-                    this.scene.themeManager.addDecorations(platform.x, platform.y, false);
-                }
                 
                 console.log(`Added bridge platform at layer ${layer}:`, { x, y, width });
             }
