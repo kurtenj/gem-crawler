@@ -1,13 +1,13 @@
 export const GAME_CONFIG = {
     type: Phaser.AUTO,
     width: 1200,
-    height: 600,
+    height: 800,
     pixelArt: true,
     physics: {
         default: 'arcade',
         arcade: {
             gravity: { y: 600 },
-            debug: true
+            debug: false
         }
     }
 };
@@ -31,9 +31,9 @@ export const LEVEL_CONFIG = {
     TILE_SIZE: 16 * 3, // 16 * SCALE
     CANVAS_WIDTH: 1200,
     LEVEL_WIDTH: 2400,
-    LEVEL_HEIGHT: 650,
-    MIN_PLATFORMS: 8,
-    MAX_PLATFORMS: 12,
+    LEVEL_HEIGHT: 850,
+    MIN_PLATFORMS: 12,
+    MAX_PLATFORMS: 16,
     PLATFORM_MIN_WIDTH: 2,
     PLATFORM_MAX_WIDTH: 4
 }; 

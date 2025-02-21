@@ -19,6 +19,7 @@ export class LevelGenerator {
         
         this.placeKey(floatingPlatforms);
         this.placeDoor();
+        this.placeGems(floatingPlatforms);
 
         console.log('Level generation complete');
     }
@@ -26,16 +27,33 @@ export class LevelGenerator {
     clearLevel() {
         this.scene.platforms.clear(true, true);
         this.scene.crawlers.clear(true, true);
+        this.scene.gems.clear(true, true);
         if (this.scene.key) this.scene.key.destroy();
         if (this.scene.door) this.scene.door.destroy();
         this.scene.hasKey = false;
+        this.scene.themeManager.clearDecorations();
     }
 
     generateGround() {
         const groundPlatforms = [];
+        const theme = this.scene.themeManager.currentTheme;
+        
         for (let x = 0; x <= LEVEL_CONFIG.LEVEL_WIDTH; x += LEVEL_CONFIG.TILE_SIZE) {
-            const platforms = this.platformManager.createPlatform(x, this.scene.GROUND_Y, 1, true);
+            // Create ground platform with theme tiles
+            const platforms = this.platformManager.createPlatform(
+                x, 
+                this.scene.GROUND_Y, 
+                1, 
+                true, 
+                false, 
+                theme
+            );
             groundPlatforms.push(platforms[0]);
+            
+            // Add decorations with a lower chance for ground
+            if (Math.random() < 0.2) {
+                this.scene.themeManager.addDecorations(x, this.scene.GROUND_Y, true);
+            }
         }
         return groundPlatforms;
     }
@@ -43,78 +61,104 @@ export class LevelGenerator {
     generateFloatingPlatforms() {
         const floatingPlatforms = [];
         const numPlatforms = Phaser.Math.Between(LEVEL_CONFIG.MIN_PLATFORMS, LEVEL_CONFIG.MAX_PLATFORMS);
+        const theme = this.scene.themeManager.currentTheme;
         
         // Define the playable area bounds
-        const minX = 200; // Minimum x position for floating platforms
-        const maxX = LEVEL_CONFIG.LEVEL_WIDTH - 200; // Leave space for door
+        const minX = 200;
+        const maxX = LEVEL_CONFIG.LEVEL_WIDTH - 200;
         const minY = 150;
-        
-        // Calculate maximum safe platform height
-        const jumpClearance = 176 + (LEVEL_CONFIG.TILE_SIZE) + (LEVEL_CONFIG.TILE_SIZE / 2);
         const maxY = Math.min(
             this.scene.GROUND_Y - 100,
-            LEVEL_CONFIG.LEVEL_HEIGHT - jumpClearance
+            LEVEL_CONFIG.LEVEL_HEIGHT - 176 - (LEVEL_CONFIG.TILE_SIZE) - (LEVEL_CONFIG.TILE_SIZE / 2)
         );
-        
+
         // Create a starting platform at the left edge
-        const startPlatformX = 24; // Exactly 24px from left edge
-        const startPlatformY = this.scene.GROUND_Y - 96; // Exactly 96px from ground
-        const startPlatformWidth = 2; // 2 tiles wide
+        const startPlatformX = 24;
+        const startPlatformY = this.scene.GROUND_Y - 128;
+        const startPlatformWidth = 2;
         
-        // Create the starting platform with specific tiles for wall extension appearance
         const startPlatform = this.platformManager.createPlatform(
             startPlatformX, 
             startPlatformY, 
             startPlatformWidth, 
             false, 
-            true // Flag to indicate this is the starting platform
+            true,
+            theme
         );
         
         const startPlatformBounds = this.getPlatformBounds(startPlatformX, startPlatformY, startPlatformWidth);
         const usedPositions = [startPlatformBounds];
         
         // Divide the level into vertical layers with weighted distribution
-        const numLayers = 4;
+        const numLayers = 5;
         const layerHeight = (maxY - minY) / numLayers;
+        
+        // Track platforms in each layer for validation
+        const platformsByLayer = Array(numLayers).fill().map(() => []);
         
         // Create platforms with better distribution
         for (let i = 0; i < numPlatforms; i++) {
             const platformData = this.generatePlatformInSection(
                 minX, maxX, minY, maxY, 
                 numPlatforms, i, numLayers, 
-                layerHeight, usedPositions
+                layerHeight, usedPositions,
+                176,
+                platformsByLayer,
+                theme
             );
             
             if (platformData) {
                 floatingPlatforms.push(platformData);
+                platformsByLayer[platformData.layer].push(platformData);
+                
+                // Add decorations with a higher chance for floating platforms
+                if (Math.random() < 0.4) {
+                    this.scene.themeManager.addDecorations(
+                        platformData.platform.x,
+                        platformData.platform.y,
+                        false
+                    );
+                }
             }
         }
 
+        // Validate and fix platform accessibility
+        this.ensurePlatformAccessibility(
+            platformsByLayer, 
+            floatingPlatforms, 
+            minX, maxX, 
+            layerHeight, 
+            minY,
+            theme
+        );
+
+        console.log('Platforms by layer:', platformsByLayer.map(layer => layer.length));
         return floatingPlatforms;
     }
 
-    generatePlatformInSection(minX, maxX, minY, maxY, numPlatforms, index, numLayers, layerHeight, usedPositions) {
+    generatePlatformInSection(minX, maxX, minY, maxY, numPlatforms, index, numLayers, layerHeight, usedPositions, maxJumpHeight, platformsByLayer, theme) {
         // Calculate horizontal sections based on platform count
         const horizontalSections = Math.ceil(numPlatforms / numLayers);
         const sectionWidth = (maxX - minX) / horizontalSections;
         
-        // Weight lower layers to have more platforms and ensure some are close to ground
+        // Weight lower layers to have more platforms
         let layer;
         const layerRoll = Math.random();
-        const groundProximityThreshold = this.scene.GROUND_Y - 250; // Platforms within 250px of ground
+        const groundProximityThreshold = this.scene.GROUND_Y - 300;
         
-        // If we don't have any platforms near the ground in this section, force a lower placement
         const hasLowPlatform = usedPositions.some(pos => pos.bottom > groundProximityThreshold);
-        if (!hasLowPlatform && index % 3 === 0) { // Every third platform attempt
-            layer = 0; // Force ground layer
-        } else if (layerRoll < 0.5) {
-            layer = 0; // 50% chance for bottom layer
-        } else if (layerRoll < 0.8) {
-            layer = 1; // 30% chance for second layer
+        if (!hasLowPlatform && index % 3 === 0) {
+            layer = 0;
+        } else if (layerRoll < 0.4) {
+            layer = 0;
+        } else if (layerRoll < 0.7) {
+            layer = 1;
+        } else if (layerRoll < 0.85) {
+            layer = 2;
         } else if (layerRoll < 0.95) {
-            layer = 2; // 15% chance for third layer
+            layer = 3;
         } else {
-            layer = 3; // 5% chance for top layer
+            layer = 4;
         }
         
         const horizontalIndex = index % horizontalSections;
@@ -126,21 +170,19 @@ export class LevelGenerator {
         let validPosition = false;
         let x, y, width;
         
-        // Weighted platform width distribution favoring longer platforms
+        // Weighted platform width distribution
         const widthRoll = Math.random();
         if (widthRoll < 0.4) {
-            width = 5; // 40% chance for width 5
+            width = 5;
         } else if (widthRoll < 0.7) {
-            width = 4; // 30% chance for width 4
+            width = 4;
         } else if (widthRoll < 0.9) {
-            width = 3; // 20% chance for width 3
+            width = 3;
         } else {
-            width = 2; // 10% chance for width 2
+            width = 2;
         }
         
-        // Try to find a non-overlapping position
         while (!validPosition && attempts < 10) {
-            // Ensure x position accounts for platform width
             const minSectionX = sectionX + (width * LEVEL_CONFIG.TILE_SIZE / 2);
             const maxSectionX = sectionX + sectionWidth - (width * LEVEL_CONFIG.TILE_SIZE / 2);
             
@@ -150,10 +192,9 @@ export class LevelGenerator {
                 x = minSectionX;
             }
             
-            // For ground layer (0), ensure some platforms are closer to ground
             if (layer === 0) {
-                const maxGroundY = this.scene.GROUND_Y - 150; // Minimum 150px from ground
-                const minGroundY = this.scene.GROUND_Y - 250; // Maximum 250px from ground
+                const maxGroundY = this.scene.GROUND_Y - 150;
+                const minGroundY = this.scene.GROUND_Y - 250;
                 y = Phaser.Math.Between(minGroundY, maxGroundY);
             } else {
                 y = Phaser.Math.Between(layerMinY, layerMaxY);
@@ -164,19 +205,22 @@ export class LevelGenerator {
         }
         
         if (validPosition) {
-            const platforms = this.platformManager.createPlatform(x, y, width);
+            const platforms = this.platformManager.createPlatform(x, y, width, false, false, theme);
             
-            // Record the position
             usedPositions.push(this.getPlatformBounds(x, y, width));
             
-            // Add crawler with probability based on layer and platform width
             const shouldSpawnCrawler = 
-                (layer < 2 && Math.random() < 0.6) || // 60% chance in lower layers
-                (width >= 4 && Math.random() < 0.7) || // 70% chance on wide platforms
-                (Math.random() < 0.4); // 40% base chance
+                (layer < 2 && Math.random() < 0.6) ||
+                (width >= 4 && Math.random() < 0.7) ||
+                (Math.random() < 0.4);
             
             if (shouldSpawnCrawler) {
                 Crawler.createForPlatform(this.scene, platforms[0], width);
+            }
+            
+            // Add decorations with a higher chance for floating platforms
+            if (Math.random() < 0.4) {
+                this.scene.themeManager.addDecorations(x, y, false);
             }
             
             return {
@@ -287,5 +331,161 @@ export class LevelGenerator {
         this.scene.door.setOrigin(0.5, 0.5);
         this.scene.door.body.setSize(48, 48, true);
         this.scene.door.body.setOffset(-16, -16);
+    }
+
+    placeGems(floatingPlatforms) {
+        // Sort platforms by layer
+        const sortedPlatforms = floatingPlatforms.sort((a, b) => a.layer - b.layer);
+        
+        // Define gem types with spawn chances
+        const gemTypes = [
+            { frame: 62, tint: 0x00FF00, chance: 0.6 },  // Emerald - Green (60% chance)
+            { frame: 102, tint: 0x00FFFF, chance: 0.4 }, // Diamond - Light blue (40% chance)
+            { frame: 82, tint: 0xFF0000, chance: 0.2 }   // Ruby - Red (20% chance)
+        ];
+        
+        gemTypes.forEach((gemType, index) => {
+            // Only attempt to spawn if random roll succeeds
+            if (Math.random() > gemType.chance) {
+                console.log(`Skipping gem spawn for type ${index}`);
+                return;
+            }
+            
+            // Select a platform from a different layer for each gem
+            // Higher gems should spawn in higher layers
+            const targetLayer = Math.floor(index * (sortedPlatforms.length / 3));
+            const possiblePlatforms = sortedPlatforms.filter(p => 
+                p.layer >= targetLayer && 
+                p.layer < targetLayer + Math.ceil(sortedPlatforms.length / 3)
+            );
+            
+            if (possiblePlatforms.length > 0) {
+                const platform = Phaser.Math.RND.pick(possiblePlatforms).platform;
+                
+                // Create the gem
+                const gem = this.scene.gems.create(
+                    platform.x,
+                    platform.y - LEVEL_CONFIG.TILE_SIZE,
+                    'tilemap',
+                    gemType.frame
+                );
+                
+                gem.setScale(this.scene.SCALE);
+                gem.body.setAllowGravity(false);
+                gem.setTint(gemType.tint);
+                
+                // Add floating animation
+                this.scene.tweens.add({
+                    targets: gem,
+                    y: gem.y - 10,
+                    duration: 1500,
+                    ease: 'Sine.easeInOut',
+                    yoyo: true,
+                    repeat: -1
+                });
+                
+                // Add gentle rotation
+                this.scene.tweens.add({
+                    targets: gem,
+                    angle: 360,
+                    duration: 3000,
+                    ease: 'Linear',
+                    repeat: -1
+                });
+                
+                console.log(`Spawned gem type ${index} at layer ${platform.layer}`);
+            }
+        });
+    }
+
+    ensurePlatformAccessibility(platformsByLayer, allPlatforms, minX, maxX, layerHeight, minY, theme) {
+        // Check each layer has at least one platform
+        for (let layer = 0; layer < platformsByLayer.length; layer++) {
+            if (platformsByLayer[layer].length === 0) {
+                console.log(`No platforms in layer ${layer}, adding one`);
+                
+                const layerBottom = minY + (layer * layerHeight);
+                const layerTop = layerBottom + layerHeight;
+                const y = layer === 0 ? 
+                    layerBottom + (layerHeight * 0.5) :
+                    layerBottom + (layerHeight * 0.6);
+                
+                const x = Phaser.Math.Between(minX + 100, maxX - 100);
+                
+                const width = Phaser.Math.Between(2, 4);
+                const platform = this.platformManager.createPlatform(x, y, width, false, false, theme)[0];
+                
+                const platformData = { platform, layer, width };
+                platformsByLayer[layer].push(platformData);
+                allPlatforms.push(platformData);
+                
+                // Add decorations for the new platform
+                if (Math.random() < 0.4) {
+                    this.scene.themeManager.addDecorations(x, y, false);
+                }
+                
+                console.log(`Added accessibility platform at layer ${layer}:`, { x, y, width });
+            }
+        }
+
+        // Ensure each layer has a platform reachable from below
+        for (let layer = 1; layer < platformsByLayer.length; layer++) {
+            const lowerPlatforms = platformsByLayer[layer - 1];
+            const currentPlatforms = platformsByLayer[layer];
+            
+            let hasReachablePlatform = false;
+            
+            for (const lowerPlatform of lowerPlatforms) {
+                for (const currentPlatform of currentPlatforms) {
+                    if (this.isPlatformReachable(lowerPlatform.platform, currentPlatform.platform)) {
+                        hasReachablePlatform = true;
+                        break;
+                    }
+                }
+                if (hasReachablePlatform) break;
+            }
+            
+            if (!hasReachablePlatform && lowerPlatforms.length > 0) {
+                console.log(`Layer ${layer} has no reachable platforms, adding bridge platform`);
+                
+                const basePlatform = Phaser.Math.RND.pick(lowerPlatforms).platform;
+                
+                const x = Phaser.Math.Clamp(
+                    basePlatform.x + Phaser.Math.Between(-100, 100),
+                    minX + 100,
+                    maxX - 100
+                );
+                const y = basePlatform.y - 176;
+                
+                const width = 3;
+                const platform = this.platformManager.createPlatform(x, y, width, false, false, theme)[0];
+                
+                const platformData = { platform, layer, width };
+                platformsByLayer[layer].push(platformData);
+                allPlatforms.push(platformData);
+                
+                // Add decorations for the bridge platform
+                if (Math.random() < 0.4) {
+                    this.scene.themeManager.addDecorations(platform.x, platform.y, false);
+                }
+                
+                console.log(`Added bridge platform at layer ${layer}:`, { x, y, width });
+            }
+        }
+    }
+
+    isPlatformReachable(fromPlatform, toPlatform) {
+        const maxJumpHeight = 176;
+        const maxJumpDistance = 200;
+        
+        // Check vertical distance
+        const verticalDist = fromPlatform.y - toPlatform.y;
+        if (verticalDist > maxJumpHeight) return false;
+        
+        // Check horizontal distance (considering platform widths)
+        const horizontalDist = Math.abs(fromPlatform.x - toPlatform.x);
+        if (horizontalDist > maxJumpDistance) return false;
+        
+        return true;
     }
 } 

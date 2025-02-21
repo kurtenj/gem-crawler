@@ -7,16 +7,16 @@ export class Platform {
         this.scene = scene;
     }
 
-    createPlatform(x, y, width, isGround = false, isStartPlatform = false) {
+    createPlatform(x, y, width, isGround = false, isStartPlatform = false, theme = null) {
         let platforms = [];
         const totalWidth = width * LEVEL_CONFIG.TILE_SIZE;
 
         if (isGround) {
-            platforms = this.createGroundPlatform(x, y, totalWidth);
+            platforms = this.createGroundPlatform(x, y, totalWidth, theme);
         } else if (isStartPlatform) {
-            platforms = this.createStartPlatform(x, y, width);
+            platforms = this.createStartPlatform(x, y, width, theme);
         } else {
-            platforms = this.createFloatingPlatform(x, y, width);
+            platforms = this.createFloatingPlatform(x, y, width, theme);
         }
 
         // Apply platform behavior
@@ -26,25 +26,37 @@ export class Platform {
             platform.body.checkCollision.left = false;
             platform.body.checkCollision.right = false;
             
-            // Make physics body match scaled sprite size exactly (48x48)
-            platform.body.setSize(48, 48, true);
-            // Center the physics body on the sprite
+            // Set up physics body to match scaled 48x48 size
+            platform.body.setSize(48, 48);
             platform.body.setOffset(-16, -16);
+            platform.setOrigin(0.5, 0.5);
+            
+            // Debug visualization in debug mode
+            if (this.scene.physics.config.debug) {
+                console.log('Platform physics body:', {
+                    x: platform.x,
+                    y: platform.y,
+                    width: platform.body.width,
+                    height: platform.body.height,
+                    offset: platform.body.offset,
+                    scale: platform.scale
+                });
+            }
         });
 
         return platforms;
     }
 
-    createGroundPlatform(x, y, totalWidth) {
-        const platform = this.scene.platforms.create(x, y, 'tilemap', TILES.BACKGROUND.DIRT.TOP.CENTER);
+    createGroundPlatform(x, y, totalWidth, theme) {
+        const tileFrame = theme ? theme.ground.center : TILES.BACKGROUND.DIRT.TOP.CENTER;
+        const platform = this.scene.platforms.create(x, y, 'tilemap', tileFrame);
         platform.setScale(LEVEL_CONFIG.SCALE);
         platform.platformWidth = totalWidth;
         platform.leftEdge = x - (LEVEL_CONFIG.TILE_SIZE / 2);
         platform.rightEdge = x + (LEVEL_CONFIG.TILE_SIZE / 2);
-        platform.setOrigin(0.5, 0.5);
 
         // Randomly add accent tiles below
-        if (Phaser.Math.Between(0, 2) === 0) { // 33% chance
+        if (Phaser.Math.Between(0, 2) === 0) {
             const accentTiles = [
                 TILES.BACKGROUND.ACCENT.LINE.TOP_LEFT,
                 TILES.BACKGROUND.ACCENT.LINE.TOP_RIGHT
@@ -57,19 +69,29 @@ export class Platform {
         return [platform];
     }
 
-    createStartPlatform(x, y, width) {
+    createStartPlatform(x, y, width, theme) {
         const platforms = [];
         const halfWidth = Math.floor(width / 2);
         const startX = x - (halfWidth * LEVEL_CONFIG.TILE_SIZE);
 
         for (let i = 0; i < width; i++) {
             let tileFrame;
-            if (i === 0) {
-                tileFrame = TILES.STRUCTURAL.FLOATING_PLATFORM.DEFAULT.LEFT;
-            } else if (i === width - 1) {
-                tileFrame = TILES.STRUCTURAL.FLOATING_PLATFORM.DEFAULT.RIGHT;
+            if (theme) {
+                if (i === 0) {
+                    tileFrame = theme.platform.left;
+                } else if (i === width - 1) {
+                    tileFrame = theme.platform.right;
+                } else {
+                    tileFrame = theme.platform.center;
+                }
             } else {
-                tileFrame = TILES.STRUCTURAL.FLOATING_PLATFORM.DEFAULT.CENTER;
+                if (i === 0) {
+                    tileFrame = TILES.STRUCTURAL.FLOATING_PLATFORM.DEFAULT.LEFT;
+                } else if (i === width - 1) {
+                    tileFrame = TILES.STRUCTURAL.FLOATING_PLATFORM.DEFAULT.RIGHT;
+                } else {
+                    tileFrame = TILES.STRUCTURAL.FLOATING_PLATFORM.DEFAULT.CENTER;
+                }
             }
 
             const platform = this.scene.platforms.create(
@@ -82,14 +104,13 @@ export class Platform {
             platform.platformWidth = width * LEVEL_CONFIG.TILE_SIZE;
             platform.leftEdge = startX;
             platform.rightEdge = startX + (width * LEVEL_CONFIG.TILE_SIZE);
-            platform.setOrigin(0.5, 0.5);
             platforms.push(platform);
         }
 
         return platforms;
     }
 
-    createFloatingPlatform(x, y, width) {
+    createFloatingPlatform(x, y, width, theme) {
         const platforms = [];
         const halfWidth = Math.floor(width / 2);
         const startX = x - (halfWidth * LEVEL_CONFIG.TILE_SIZE);
@@ -105,12 +126,22 @@ export class Platform {
 
         for (let i = 0; i < width; i++) {
             let tileFrame;
-            if (i === 0) {
-                tileFrame = selectedType.LEFT;
-            } else if (i === width - 1) {
-                tileFrame = selectedType.RIGHT;
+            if (theme) {
+                if (i === 0) {
+                    tileFrame = theme.platform.left;
+                } else if (i === width - 1) {
+                    tileFrame = theme.platform.right;
+                } else {
+                    tileFrame = theme.platform.center;
+                }
             } else {
-                tileFrame = selectedType.CENTER;
+                if (i === 0) {
+                    tileFrame = selectedType.LEFT;
+                } else if (i === width - 1) {
+                    tileFrame = selectedType.RIGHT;
+                } else {
+                    tileFrame = selectedType.CENTER;
+                }
             }
 
             const platform = this.scene.platforms.create(
@@ -123,7 +154,6 @@ export class Platform {
             platform.platformWidth = width * LEVEL_CONFIG.TILE_SIZE;
             platform.leftEdge = startX;
             platform.rightEdge = startX + (width * LEVEL_CONFIG.TILE_SIZE);
-            platform.setOrigin(0.5, 0.5);
             platforms.push(platform);
         }
 

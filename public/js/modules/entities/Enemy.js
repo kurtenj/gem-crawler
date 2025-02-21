@@ -6,6 +6,7 @@ export class Crawler {
     constructor(scene, x, y, platform) {
         this.scene = scene;
         this.sprite = scene.crawlers.create(x, y, 'tilemap', TILES.ENEMIES.CRAWLER.IDLE);
+        this.sprite.crawler = this; // Attach crawler instance to sprite
         this.setupSprite();
         this.setupPatrol(platform);
         this.createAnimations();
@@ -18,10 +19,19 @@ export class Crawler {
         this.sprite.isDead = false;
         this.sprite.setOrigin(0.5, 0.5);
         
-        // Set exact 48x48 collision box
-        this.sprite.body.setSize(16, 16); // 16x16 is the base sprite size
-        this.sprite.body.setOffset(0, 0); // Center the collision box
+        // Set up physics body to match 16x16 sprite size
+        this.sprite.body.setSize(16, 16); // Base sprite size without scaling
+        this.sprite.body.setOffset(0, 0);
         this.sprite.body.setAllowGravity(true);
+
+        if (this.scene.physics.config.debug) {
+            console.log('Crawler physics body:', {
+                width: this.sprite.body.width,
+                height: this.sprite.body.height,
+                offset: this.sprite.body.offset,
+                scale: this.sprite.scale
+            });
+        }
 
         // Add collision callback
         this.sprite.body.onWorldBounds = true;
@@ -106,22 +116,74 @@ export class Crawler {
     }
 
     die() {
+        console.log('Enemy die() method called');
         if (!this.sprite.isDead) {
+            console.log('Setting enemy to dead state');
             this.sprite.isDead = true;
             this.sprite.setVelocity(0, 0);
             this.sprite.setFrame(TILES.ENEMIES.CRAWLER.DEAD);
             this.sprite.body.enable = false;
             
-            // Fade out and destroy
+            // Create spirit sprite that rises
+            const spiritSprite = this.scene.add.sprite(
+                this.sprite.x,
+                this.sprite.y,
+                'tilemap',
+                TILES.ENEMIES.CRAWLER.DEAD
+            );
+            spiritSprite.setScale(this.scene.SCALE);
+            spiritSprite.setAlpha(0.7);
+            spiritSprite.setTint(0x88FFFF); // Light blue tint for spirit
+            
+            // Create particle effect for death
+            const deathEmitter = this.scene.add.particles(0, 0, 'tilemap', {
+                frame: TILES.ENEMIES.CRAWLER.DEAD,
+                lifespan: 800,
+                speed: { min: 50, max: 100 },
+                scale: { start: 0.5, end: 0 },
+                quantity: 1,
+                alpha: { start: 0.5, end: 0 },
+                tint: 0x88FFFF,
+                emitting: false
+            });
+            
+            deathEmitter.setPosition(this.sprite.x, this.sprite.y);
+            deathEmitter.explode(8); // Create burst of particles
+            
+            // Fade out original sprite
             this.scene.tweens.add({
                 targets: this.sprite,
                 alpha: 0,
                 duration: 500,
-                ease: 'Power2',
+                ease: 'Power2'
+            });
+            
+            // Animate spirit rising and fading
+            this.scene.tweens.add({
+                targets: spiritSprite,
+                y: this.sprite.y - 100,
+                alpha: 0,
+                scaleX: 0.5,
+                scaleY: 0.5,
+                duration: 1000,
+                ease: 'Quad.easeOut',
                 onComplete: () => {
+                    console.log('Enemy death animation complete');
+                    spiritSprite.destroy();
+                    deathEmitter.destroy();
                     this.sprite.destroy();
                 }
             });
+            
+            // Add gentle rotation to spirit
+            this.scene.tweens.add({
+                targets: spiritSprite,
+                angle: Phaser.Math.Between(-20, 20),
+                duration: 1000,
+                ease: 'Sine.easeInOut'
+            });
+        } else {
+            console.log('Enemy was already dead');
         }
     }
 

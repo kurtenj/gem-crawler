@@ -67,38 +67,41 @@ export class GameUI {
         this.keyIcon.setAlpha(0.3);
         this.container.add(this.keyIcon);
 
-        // Emerald
+        // Emerald (first)
         this.emeraldIcon = this.scene.add.sprite(
             itemStartX + itemSpacing,
             itemY,
             'tilemap',
-            TILES.BASIC.COLLECTIBLE.EMERALD.LARGE
+            62 // Emerald tile
         );
         this.emeraldIcon.setScale(2);
         this.emeraldIcon.setAlpha(0.3);
+        this.emeraldIcon.setTint(0x00FF00); // Green tint
         this.container.add(this.emeraldIcon);
 
-        // Ruby
-        this.rubyIcon = this.scene.add.sprite(
+        // Diamond (second)
+        this.diamondIcon = this.scene.add.sprite(
             itemStartX + (itemSpacing * 2),
             itemY,
             'tilemap',
-            TILES.BASIC.COLLECTIBLE.HEART.LARGE // Using heart for ruby temporarily
-        );
-        this.rubyIcon.setScale(2);
-        this.rubyIcon.setAlpha(0.3);
-        this.container.add(this.rubyIcon);
-
-        // Diamond
-        this.diamondIcon = this.scene.add.sprite(
-            itemStartX + (itemSpacing * 3),
-            itemY,
-            'tilemap',
-            TILES.BASIC.COLLECTIBLE.COIN.LARGE // Using coin for diamond temporarily
+            102 // Diamond tile
         );
         this.diamondIcon.setScale(2);
         this.diamondIcon.setAlpha(0.3);
+        this.diamondIcon.setTint(0x00FFFF); // Light blue tint
         this.container.add(this.diamondIcon);
+
+        // Ruby (third)
+        this.rubyIcon = this.scene.add.sprite(
+            itemStartX + (itemSpacing * 3),
+            itemY,
+            'tilemap',
+            82 // Ruby tile
+        );
+        this.rubyIcon.setScale(2);
+        this.rubyIcon.setAlpha(0.3);
+        this.rubyIcon.setTint(0xFF0000); // Red tint
+        this.container.add(this.rubyIcon);
     }
 
     updateLevel(level) {
